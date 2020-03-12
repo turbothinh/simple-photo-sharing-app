@@ -1,37 +1,77 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, Image, TouchableOpacity, SafeAreaView } from 'react-native';
-import styled from '@emotion/native';
+import { SafeAreaView } from 'react-native';
+import styled, { css } from '@emotion/native';
 import { PIXABAY_API_KEY } from 'react-native-dotenv';
 
 const getPhotos = () => {
 	const keyword = 'programmer';
 	const apiService = 'https://pixabay.com/api/';
-	const apiOptions = '&per_page=5&pretty=true';
+	const apiOptions = '&per_page=20&pretty=true';
 	const apiKeyword = encodeURIComponent(keyword);
 	const apiEndpoint = `${apiService}?key=${PIXABAY_API_KEY}&q=${apiKeyword}${apiOptions}`;
 
 	return fetch(apiEndpoint);
 };
 
+const structurePhotoData = photos => {
+	const photoList = photos.reduce((acc, photo) => {
+		acc.push({
+			id: photo.id,
+			uri: photo.webformatURL,
+		});
+		return acc;
+	}, []);
+
+	return photoList;
+};
+
 const Photos = () => {
 	const [photos, setPhotos] = useState([]);
+	const [selected, setSelected] = useState(new Map());
+
+	const onSelect = React.useCallback(
+		id => {
+			const newSelected = new Map(selected);
+			newSelected.set(id, !selected.get(id));
+
+			setSelected(newSelected);
+		},
+		[selected],
+	);
 
 	useEffect(() => {
 		getPhotos()
 			.then(res => res.json())
-			.then(data => setPhotos(data.hits))
+			.then(data => {
+				const photos = structurePhotoData(data.hits);
+				setPhotos(photos);
+			})
 			.catch(e => {
 				throw new Error(`Something wrong ${e}`);
 			});
-	}, []);
+	}, [structurePhotoData, getPhotos]);
+
+	const renderItems = item => {
+		const { id, uri } = item;
+
+		return (
+			<Card onPress={() => onSelect(id)}>
+				<Overlay selected={selected.get(id)} />
+				<Photo source={{ uri }} />
+			</Card>
+		);
+	};
 
 	return (
 		photos && (
-			<PhotoList>
-				{photos.map(photo => (
-					<Photo key={photo.id} source={{ uri: photo.webformatURL }} />
-				))}
-			</PhotoList>
+			<PhotoList
+				data={photos}
+				horizontal={false}
+				numColumns={2}
+				keyExtractor={photo => photo.id}
+				extraData={selected}
+				renderItem={({ item }) => renderItems(item)}
+			/>
 		)
 	);
 };
@@ -50,16 +90,36 @@ export default function App() {
 	);
 }
 
-const Photo = styled.Image`
-	width: 25%;
-	height: 100px;
+const Card = styled.TouchableOpacity`
+	position: relative;
+	flex-basis: 50%;
+	background-color: red;
+	margin: 2px;
 `;
 
-const PhotoList = styled.View`
+const Overlay = styled.View`
+	display: ${props => (props.selected ? 'flex' : 'none')};
+	position: absolute;
+	top: 0;
+	left: 0;
 	width: 100%;
-	height: 400px;
+	height: 100%;
+	background-color: rgba(250, 250, 142, 0.3);
+	z-index: 2;
+`;
+
+const Photo = styled.Image`
+	width: 100%;
+	height: 100px;
+	flex: 1;
+`;
+
+const PhotoList = styled.FlatList`
+	width: 100%;
 	display: flex;
 	flex-wrap: wrap;
+	padding: 8px;
+	margin-bottom: 20px;
 `;
 
 const Container = styled.View`
@@ -71,12 +131,16 @@ const Container = styled.View`
 
 const Description = styled.Text`
 	font-size: 13px;
+	text-align: center;
 `;
 
 const Button = styled.TouchableOpacity`
 	background-color: black;
 	padding: 10px;
 	border-radius: 2px;
+	width: 200px;
+	margin: auto;
+	margin-top: 10px;
 `;
 
 const ButtonText = styled.Text`
