@@ -1,31 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView } from 'react-native';
-import styled, { css } from '@emotion/native';
-import { PIXABAY_API_KEY } from 'react-native-dotenv';
+import styled from '@emotion/native';
+import { getPhotos, structurePhotoData } from './utils';
 
-const getPhotos = () => {
-	const keyword = 'programmer';
-	const apiService = 'https://pixabay.com/api/';
-	const apiOptions = '&per_page=20&pretty=true';
-	const apiKeyword = encodeURIComponent(keyword);
-	const apiEndpoint = `${apiService}?key=${PIXABAY_API_KEY}&q=${apiKeyword}${apiOptions}`;
-
-	return fetch(apiEndpoint);
-};
-
-const structurePhotoData = photos => {
-	const photoList = photos.reduce((acc, photo) => {
-		acc.push({
-			id: photo.id,
-			uri: photo.webformatURL,
-		});
-		return acc;
-	}, []);
-
-	return photoList;
-};
-
-const Photos = () => {
+export const PhotoAlbum = () => {
 	const [photos, setPhotos] = useState([]);
 	const [selected, setSelected] = useState(new Map());
 
@@ -76,20 +53,6 @@ const Photos = () => {
 	);
 };
 
-export default function App() {
-	return (
-		<Container>
-			<SafeAreaView>
-				<Photos />
-				<Description>Click on the button below to share image!</Description>
-				<Button onClick={() => alert('Shared!')}>
-					<ButtonText>Share</ButtonText>
-				</Button>
-			</SafeAreaView>
-		</Container>
-	);
-}
-
 const Card = styled.TouchableOpacity`
 	position: relative;
 	flex-basis: 50%;
@@ -104,7 +67,7 @@ const Overlay = styled.View`
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background-color: rgba(250, 250, 142, 0.3);
+	background-color: rgba(250, 60, 155, 0.5);
 	z-index: 2;
 `;
 
@@ -120,32 +83,4 @@ const PhotoList = styled.FlatList`
 	flex-wrap: wrap;
 	padding: 8px;
 	margin-bottom: 20px;
-`;
-
-const Container = styled.View`
-	background-color: '#fff';
-	display: flex;
-	align-items: center;
-	justify-content: center;
-`;
-
-const Description = styled.Text`
-	font-size: 13px;
-	text-align: center;
-`;
-
-const Button = styled.TouchableOpacity`
-	background-color: black;
-	padding: 10px;
-	border-radius: 2px;
-	width: 200px;
-	margin: auto;
-	margin-top: 10px;
-`;
-
-const ButtonText = styled.Text`
-	color: white;
-	text-transform: uppercase;
-	font-weight: bold;
-	font-size: 20px;
 `;
