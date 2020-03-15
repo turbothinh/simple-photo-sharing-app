@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import styled from '@emotion/native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
+import { Platform } from 'react-native';
+import uploadToAnonymousFilesAsync from 'anonymous-files';
 
 export const ControlPanel = ({ selectedImage, setSelectedImage }) => {
 	// Open Image picker
@@ -19,21 +21,35 @@ export const ControlPanel = ({ selectedImage, setSelectedImage }) => {
 			return;
 		}
 
-		const newPhoto = {
-			id: Math.round(Math.random() * 1e8),
-			uri: pickerResult.uri,
-		};
-		setSelectedImage(newPhoto);
+		// Handle photo differently on differnent platforms
+		// Web
+		if (Platform.OS === 'web') {
+			const remoteUri = await uploadToAnonymousFilesAsync(pickerResult.uri);
+			const newPhoto = {
+				id: Math.round(Math.random() * 1e8),
+				uri: pickerResult.uri,
+				remoteUri,
+			};
+			setSelectedImage(newPhoto);
+			// App
+		} else {
+			const newPhoto = {
+				id: Math.round(Math.random() * 1e8),
+				uri: pickerResult.uri,
+				remoteUri: null,
+			};
+			setSelectedImage(newPhoto);
+		}
 	};
 
 	// Open share dialog
 	const openShareDialogAsync = async () => {
 		if (!(await Sharing.isAvailableAsync())) {
-			alert(`Ouch, sharing isn't available on your platform`);
+			alert(`The image is available for sharing at: ${selectedImage.remoteUri}`);
 			return;
 		}
 
-		Sharing.shareAsync(selectedImage.uri);
+		Sharing.shareAsync(selectedImage.remoteUri || selectedImage.localUri);
 	};
 
 	return (

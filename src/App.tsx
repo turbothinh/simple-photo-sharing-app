@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { SafeAreaView, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native';
 import styled from '@emotion/native';
+
 import { PhotoAlbum } from './PhotoAlbum';
 import { ControlPanel } from './ControlPanel';
 
