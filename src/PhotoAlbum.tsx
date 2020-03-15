@@ -1,8 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, FC } from 'react';
 import styled from '@emotion/native';
 import { getPhotos, structurePhotoData } from './utils';
 
-export const PhotoAlbum = () => {
+type PhotoObject = {
+	id: number | string;
+	uri: string;
+};
+
+interface PhotoAlbum {
+	additionalPhoto: PhotoObject;
+}
+
+export const PhotoAlbum: FC<PhotoAlbum> = ({ additionalPhoto }) => {
 	const [photos, setPhotos] = useState([]);
 	const [selected, setSelected] = useState(new Map());
 
@@ -17,24 +26,39 @@ export const PhotoAlbum = () => {
 	);
 
 	useEffect(() => {
-		getPhotos()
-			.then(res => res.json())
-			.then(data => {
-				const photos = structurePhotoData(data.hits);
-				setPhotos(photos);
-			})
-			.catch(e => {
-				throw new Error(`Something wrong ${e}`);
-			});
-	}, [structurePhotoData, getPhotos]);
+		const buildPhotoList = async () => {
+			try {
+				const result = await getPhotos();
+				const rawListOfPhotos = await result.json();
+				const listOfPhotos = await structurePhotoData(rawListOfPhotos.hits);
+				setPhotos(listOfPhotos);
+			} catch (error) {
+				setPhotos([]);
+			}
+		};
+
+		// If photo list is empty, fetch photos
+		if (photos.length === 0) {
+			buildPhotoList();
+		}
+	}, [structurePhotoData, getPhotos, additionalPhoto, photos]);
+
+	useEffect(() => {
+		if (additionalPhoto) {
+			console.log('adding photos');
+			console.log(photos);
+			const newPhotos = photos;
+			newPhotos.push(additionalPhoto);
+			setPhotos(newPhotos);
+		}
+	}, [additionalPhoto]);
 
 	const renderItems = item => {
 		const { id, uri } = item;
-
 		return (
 			<Card onPress={() => onSelect(id)}>
 				<Overlay selected={selected.get(id)} />
-				<Photo source={{ uri }} />
+				<Photo source={{ uri }} style={{ resizeMode: 'cover' }} />
 			</Card>
 		);
 	};
@@ -45,8 +69,8 @@ export const PhotoAlbum = () => {
 				data={photos}
 				horizontal={false}
 				numColumns={2}
+				extraData={photos}
 				keyExtractor={photo => photo.id}
-				extraData={selected}
 				renderItem={({ item }) => renderItems(item)}
 			/>
 		)
