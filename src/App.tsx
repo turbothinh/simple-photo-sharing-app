@@ -3,10 +3,12 @@ import { SafeAreaView, Alert } from 'react-native';
 import styled from '@emotion/native';
 import { PhotoAlbum } from './PhotoAlbum';
 import * as ImagePicker from 'expo-image-picker';
+import * as Sharing from 'expo-sharing';
 
 export const App = () => {
 	const [selectedImage, setSelectedImage] = useState(null);
 
+	// Open Image picker
 	const openImagePickerAsync = async () => {
 		const permissionResult = await ImagePicker.requestCameraRollPermissionsAsync();
 
@@ -28,6 +30,16 @@ export const App = () => {
 		setSelectedImage(newPhoto);
 	};
 
+	// Open share dialog
+	const openShareDialogAsync = async () => {
+		if (!(await Sharing.isAvailableAsync())) {
+			alert(`Ouch, sharing isn't available on your platform`);
+			return;
+		}
+
+		Sharing.shareAsync(selectedImage.uri);
+	};
+
 	return (
 		<Container>
 			<SafeAreaView>
@@ -36,7 +48,7 @@ export const App = () => {
 					<Button onPress={openImagePickerAsync}>
 						<ButtonText>Upload</ButtonText>
 					</Button>
-					<Button onPress={() => Alert.alert('Photos shared!')}>
+					<Button onPress={openShareDialogAsync}>
 						<ButtonText>Share</ButtonText>
 					</Button>
 				</ButtonRow>
