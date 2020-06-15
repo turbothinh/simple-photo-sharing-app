@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import styled from '@emotion/native';
+import React from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 import uploadToAnonymousFilesAsync from 'anonymous-files';
+import { ButtonRow,  Button, ButtonText } from './Button';
 
 export const ControlPanel = ({ selectedImage, setSelectedImage }) => {
 	// Open Image picker
@@ -63,25 +63,3 @@ export const ControlPanel = ({ selectedImage, setSelectedImage }) => {
 		</ButtonRow>
 	);
 };
-
-const ButtonRow = styled.View`
-	display: flex;
-	flex-direction: row;
-`;
-
-const Button = styled.TouchableOpacity`
-	background-color: black;
-	padding: 10px;
-	border-radius: 2px;
-	width: 150px;
-	margin: auto;
-	margin-top: 10px;
-`;
-
-const ButtonText = styled.Text`
-	color: white;
-	text-transform: uppercase;
-	font-weight: bold;
-	font-size: 16px;
-	text-align: center;
-`;

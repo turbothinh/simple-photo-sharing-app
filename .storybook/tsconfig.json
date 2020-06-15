@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "out",
+    "jsx": "react",
+    "skipLibCheck": true
+  },
+  "include": ["../src/**/*.stories.tsx"],
+  "exclude": ["node_modules"]
+}
